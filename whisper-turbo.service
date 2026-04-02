@@ -1,0 +1,29 @@
+# whisper-turbo: STT proxy for whisper.cpp
+# Routes audio to whisper-server for fast transcription.
+#
+# NOTE: install.sh generates the actual service file with correct paths.
+# This template is a reference for manual installations.
+#
+# Install:
+#   sudo cp whisper-turbo.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable whisper-turbo
+
+[Unit]
+Description=whisper-turbo STT Proxy
+After=network.target whisper-server.service
+
+[Service]
+EnvironmentFile=/opt/whisper-turbo/.env
+WorkingDirectory=/opt/whisper-turbo
+ExecStart=/opt/whisper-turbo/venv/bin/uvicorn whisper_turbo:app \
+    --host ${PROXY_HOST} \
+    --port ${PROXY_PORT} \
+    --log-level ${LOG_LEVEL}
+# Change to your username
+User=youruser
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

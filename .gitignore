@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Environment
+.env
+
+# Logs
+*.log
+
+# whisper.cpp build artifacts (if built inside repo)
+build/
+models/
+*.bin
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

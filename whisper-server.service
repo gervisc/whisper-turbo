@@ -1,0 +1,36 @@
+# whisper-turbo: whisper.cpp server with OpenVINO acceleration
+# Keeps the model loaded in memory for fast inference.
+#
+# NOTE: install.sh generates the actual service file with correct paths.
+# This template is a reference for manual installations.
+#
+# You MUST set LD_LIBRARY_PATH to your OpenVINO libs directory.
+# Find it with: python3 -c "import openvino, os; print(os.path.join(os.path.dirname(openvino.__file__), 'libs'))"
+#
+# Install:
+#   sudo cp whisper-server.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable whisper-server
+
+[Unit]
+Description=whisper.cpp STT Server (OpenVINO)
+After=network.target
+
+[Service]
+EnvironmentFile=/opt/whisper-turbo/.env
+# REQUIRED: Set this to your OpenVINO libs path
+Environment="LD_LIBRARY_PATH=/path/to/openvino/libs"
+ExecStart=/opt/whisper.cpp/build/bin/whisper-server \
+    -m /opt/whisper.cpp/models/${WHISPER_MODEL} \
+    --host ${WHISPER_SERVER_HOST} \
+    --port ${WHISPER_SERVER_PORT} \
+    --language ${WHISPER_LANGUAGE} \
+    -t ${WHISPER_THREADS} \
+    -oved ${OPENVINO_DEVICE}
+# Change to your username
+User=youruser
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
