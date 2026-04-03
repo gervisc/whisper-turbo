@@ -12,7 +12,7 @@ If you run whisper.cpp on an Intel machine without an NVIDIA GPU, this project i
 
 ## Benchmarks
 
-Tested on a **Lenovo ThinkCentre M920q** (Intel Core i7-8700T, 32GB RAM, Intel UHD 630 iGPU, Ubuntu 24.04):
+Tested on a **Lenovo ThinkCentre M920q** (Intel Core i5-9500T, 32GB RAM, Intel UHD 630 iGPU, Ubuntu 24.04):
 
 | Setup | Encode Time | Total (11s audio) | vs. Baseline |
 |-------|------------|-------------------|--------------|
@@ -159,7 +159,7 @@ If you use [Willow](https://heywillow.io/) with ESP32 voice assistants, whisper-
 
 | Machine | CPU | iGPU | RAM | OpenVINO Device | Encode Speedup |
 |---------|-----|------|-----|-----------------|----------------|
-| Lenovo ThinkCentre M920q | i7-8700T | UHD 630 | 32 GB | CPU | 2.5x |
+| Lenovo ThinkCentre M920q | i5-9500T | UHD 630 | 32 GB | CPU | 2.5x |
 
 **Tested on your hardware?** Open an issue with your benchmarks and I'll add it to the table.
 
