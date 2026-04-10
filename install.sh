@@ -20,6 +20,7 @@ INSTALL_DIR="/opt/whisper-turbo"
 MODEL="small.en"
 OPENVINO_DEVICE="CPU"
 THREADS=4
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # ──────────────────────────────────────────────
 # PARSE ARGS
@@ -72,7 +73,7 @@ fi
 info "Checking prerequisites..."
 
 MISSING=()
-for cmd in cmake gcc g++ git python3; do
+for cmd in cmake gcc g++ git python3 ffmpeg; do
     check_cmd "$cmd" || MISSING+=("$cmd")
 done
 
@@ -81,24 +82,29 @@ python3 -m venv --help &>/dev/null 2>&1 || MISSING+=("python3-venv")
 
 if [[ ${#MISSING[@]} -gt 0 ]]; then
     error "Missing: ${MISSING[*]}
-    Install with: sudo apt install -y cmake build-essential git python3 python3-venv"
+    Install with: sudo apt install -y cmake build-essential git python3 python3-venv ffmpeg"
 fi
 
 info "All prerequisites found."
 
 # ──────────────────────────────────────────────
-# STEP 2: CREATE PYTHON VENV (needed early for OpenVINO)
+# STEP 2: INSTALL APP FILES AND CREATE PYTHON VENV (needed early for OpenVINO)
 # ──────────────────────────────────────────────
 
 VENV_PIP="$INSTALL_DIR/venv/bin/pip"
 VENV_PYTHON="$INSTALL_DIR/venv/bin/python"
 
+info "Installing whisper-turbo files..."
+sudo mkdir -p "$INSTALL_DIR"
+sudo chown -R "$USER:$USER" "$INSTALL_DIR"
+install -m 644 "$SCRIPT_DIR/whisper_turbo.py" "$INSTALL_DIR/whisper_turbo.py"
+install -m 644 "$SCRIPT_DIR/requirements.txt" "$INSTALL_DIR/requirements.txt"
+install -m 644 "$SCRIPT_DIR/.env.example" "$INSTALL_DIR/.env.example"
+
 if [[ -x "$VENV_PYTHON" ]]; then
     info "Python venv already exists — skipping."
 else
     info "Creating Python virtual environment..."
-    sudo mkdir -p "$INSTALL_DIR"
-    sudo chown -R "$USER:$USER" "$INSTALL_DIR"
     python3 -m venv "$INSTALL_DIR/venv"
     "$VENV_PIP" install -q -r "$INSTALL_DIR/requirements.txt"
     info "Python dependencies installed."
@@ -238,14 +244,19 @@ WHISPER_SERVER_HOST="127.0.0.1"
 WHISPER_SERVER_PORT="19003"
 PROXY_HOST="127.0.0.1"
 PROXY_PORT="19004"
+SUBTITLE_OUTPUT_DIR="$INSTALL_DIR/subtitles"
 WHISPER_LANGUAGE="en"
 WHISPER_THREADS="$THREADS"
 OPENVINO_DEVICE="$OPENVINO_DEVICE"
 WHISPER_TIMEOUT="15"
+WHISPER_SUBTITLE_TIMEOUT="1800"
+MEDIA_CONVERT_TIMEOUT="3600"
 LOG_LEVEL="info"
 ENVEOF
     info ".env generated at $ENV_FILE"
 fi
+
+mkdir -p "$INSTALL_DIR/subtitles"
 
 # ──────────────────────────────────────────────
 # STEP 7: INSTALL SYSTEMD SERVICES
@@ -351,6 +362,7 @@ echo ""
 echo "  Test:"
 echo "    curl http://127.0.0.1:19004/health"
 echo "    curl -X POST http://127.0.0.1:19004/v1/transcribe -F 'file=@audio.wav'"
+echo "    curl -X POST http://127.0.0.1:19004/v1/subtitles -F 'file=@/path/to/movie.mkv' -o movie.en.srt"
 echo ""
 echo "  For Willow/WIS integration, see: willow/WILLOW.md"
 echo ""
